@@ -20,6 +20,11 @@ LOCAL_PATH := $(call my-dir)
 # Build third-party libraries (separately so we can ignore warnings)
 include $(CLEAR_VARS)
 	LOCAL_MODULE := RilOfono.3rdparty
+	LOCAL_STATIC_ANDROID_LIBRARIES := \
+		androidx.core_core \
+		core-all
+
+	LOCAL_PRIVATE_PLATFORM_APIS := true
 	LOCAL_SRC_FILES := $(call find-subdir-files,lib/java/dbus -path lib/java/dbus/org/freedesktop/dbus/test -prune -o \( -name "*.java" -print \)) \
 						$(call all-java-files-under,lib/java/debug) \
 						$(call all-java-files-under,lib/java/ofono)
@@ -28,6 +33,7 @@ include $(BUILD_STATIC_JAVA_LIBRARY)
 # Build our Java RIL (as a lib, because we need the RilWrapper to complete building, but building the RilWrapper needs the rest)
 include $(CLEAR_VARS)
 	LOCAL_MODULE := RilOfono.lib
+	LOCAL_PRIVATE_PLATFORM_APIS := true
 	LOCAL_SRC_FILES := $(call all-java-files-under,src/java) $(call all-java-files-under,build/java)
 	LOCAL_STATIC_JAVA_LIBRARIES := RilOfono.3rdparty
 	LOCAL_JAVA_LIBRARIES := telephony-common
@@ -44,6 +50,7 @@ $(RILOFONO_WRAPPER_JAVA): $(foreach lib,RilOfono.lib framework telephony-common,
 # Build RIL package
 include $(CLEAR_VARS)
 	LOCAL_PACKAGE_NAME := RilOfono
+	LOCAL_PRIVATE_PLATFORM_APIS := true
 	LOCAL_GENERATED_SOURCES := $(RILOFONO_WRAPPER_JAVA)
 	LOCAL_STATIC_JAVA_LIBRARIES := RilOfono.lib
 	LOCAL_JAVA_LIBRARIES := telephony-common

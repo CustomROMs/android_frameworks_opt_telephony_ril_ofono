@@ -1,6 +1,6 @@
 package net.scintill;
 
-import android.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.net.LocalSocketAddress;
 import android.util.Log;
 
