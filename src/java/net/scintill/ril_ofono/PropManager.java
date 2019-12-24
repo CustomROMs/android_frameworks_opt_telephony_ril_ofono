@@ -32,8 +32,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import libcore.util.Objects;
+import java.util.Objects;
 
 import static net.scintill.ril_ofono.RilOfono.privExc;
 import static net.scintill.ril_ofono.RilOfono.privStr;
@@ -46,7 +45,7 @@ import static net.scintill.ril_ofono.RilOfono.privStr;
         boolean changed;
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (propsToUpdate) {
-            changed = !Objects.equal(value, propsToUpdate.put(name, value));
+            changed = !Objects.equals(value, propsToUpdate.put(name, value));
         }
         if (changed && log) {
             Rlog.i(TAG, thingChangingDebugRef + " propchange: " + name + "=" + privStr(value));

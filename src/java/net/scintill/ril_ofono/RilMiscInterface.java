@@ -19,8 +19,9 @@
 
 package net.scintill.ril_ofono;
 
+import android.telephony.data.DataProfile;
+
 import com.android.internal.telephony.cdma.CdmaSmsBroadcastConfigInfo;
-import com.android.internal.telephony.dataconnection.DataProfile;
 import com.android.internal.telephony.gsm.SmsBroadcastConfigInfo;
 
 interface RilMiscInterface {

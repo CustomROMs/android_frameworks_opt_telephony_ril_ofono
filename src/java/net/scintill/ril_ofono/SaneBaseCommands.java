@@ -63,17 +63,17 @@ import com.android.internal.telephony.RadioCapability;
     @Override
     public abstract void pullLceData(Message result);
 
-    @Override
-    public abstract void setLocalCallHold(boolean lchStatus);
+    //@Override
+    //public abstract void setLocalCallHold(boolean lchStatus);
 
-    @Override
-    public abstract void iccOpenLogicalChannel(String AID, Message response);
+    //@Override
+    //public abstract void iccOpenLogicalChannel(String AID, Message response);
 
-    @Override
-    public abstract void iccOpenLogicalChannel(String AID, byte p2, Message response);
+    //@Override
+    //public abstract void iccOpenLogicalChannel(String AID, byte p2, Message response);
 
-    @Override
-    public abstract void iccCloseLogicalChannel(int channel, Message response);
+    //@Override
+    //public abstract void iccCloseLogicalChannel(int channel, Message response);
 
     @Override
     public abstract void iccTransmitApduLogicalChannel(int channel, int cla, int instruction,
@@ -84,7 +84,7 @@ import com.android.internal.telephony.RadioCapability;
     public abstract void iccTransmitApduBasicChannel(int cla, int instruction, int p1, int p2,
                                             int p3, String data, Message response);
 
-    @Override
-    public abstract void getAtr(Message response);
+    //@Override
+    //public abstract void getAtr(Message response);
 
 }

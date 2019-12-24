@@ -24,13 +24,13 @@ import android.net.LinkAddress;
 import android.net.NetworkUtils;
 import android.os.INetworkManagementService;
 import android.os.RemoteException;
+import android.telephony.data.DataCallResponse;
 import android.telephony.Rlog;
 import android.text.TextUtils;
 
 import com.android.internal.telephony.CommandException;
 import com.android.internal.telephony.PhoneConstants;
 import com.android.internal.telephony.RILConstants;
-import com.android.internal.telephony.dataconnection.DataCallResponse;
 import com.android.internal.telephony.dataconnection.DcFailCause;
 
 import net.scintill.ril_ofono.NetworkRegistrationModule.OfonoNetworkTechnology;
@@ -44,6 +44,7 @@ import org.ofono.Error.NotAttached;
 import org.ofono.NetworkRegistration;
 import org.ofono.StructPathAndProps;
 
+import java.net.InetAddress;
 import java.net.Inet4Address;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -70,8 +71,8 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
     private ConnectionManager mConnMan;
     private NetworkRegistration mNetReg;
     private INetworkManagementService mNetworkManagementService;
-    private RegistrantList mDataNetworkStateRegistrants;
-    private RegistrantList mVoiceNetworkStateRegistrants;
+    private RegistrantList mDataCallListChangedRegistrants;
+    private RegistrantList mNetworkStateRegistrants;
 
     private final Map<String, Variant<?>> mNetRegProps = new HashMap<>();
     private final Map<String, Variant<?>> mConnManProps = new HashMap<>();
@@ -82,8 +83,8 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
         Rlog.v(TAG, "DatacallModule()");
         mConnMan = connMan;
         mNetReg = netReg;
-        mDataNetworkStateRegistrants = dataNetworkStateRegistrants;
-        mVoiceNetworkStateRegistrants = voiceNetworkStateRegistrants;
+        mDataCallListChangedRegistrants = dataNetworkStateRegistrants;
+        mNetworkStateRegistrants = voiceNetworkStateRegistrants;
         mNetworkManagementService = networkManagementService;
 
         initProps(mConnManProps, ConnectionManager.class, mConnMan);
@@ -167,29 +168,36 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
         Map<String, Variant<?>> ipSettings = getProp(props, "Settings", new HashMap<String, Variant<?>>());
         // TODO ipv6?
 
-        DataCallResponse dcr = new DataCallResponse();
         // see RIL#getDataCallResponse for guidance on these values
-        dcr.version = 11;
-        dcr.status = DcFailCause.NONE.getErrorCode();
-        dcr.suggestedRetryTime = -1;
-        dcr.cid = getUniqueIntId(dbusPath);
-        dcr.active = getProp(props, "Active", Boolean.FALSE) ? DATA_CONNECTION_ACTIVE_PH_LINK_UP : DATA_CONNECTION_ACTIVE_PH_LINK_INACTIVE;
-        dcr.type = ""; // I don't think anything is using this, and I'm not sure the valid values
+        int status = DcFailCause.NONE.getErrorCode();
+        int suggestedRetryTime = -1;
+	int cid = getUniqueIntId(dbusPath);
+	int active = getProp(props, "Active", Boolean.FALSE) ? DATA_CONNECTION_ACTIVE_PH_LINK_UP : DATA_CONNECTION_ACTIVE_PH_LINK_INACTIVE;
 
-        dcr.ifname = getProp(ipSettings, "Interface", (String)null);
-        if (dcr.ifname != null) {
-            mLastInterface.put(dbusPath, dcr.ifname);
+	String ifname = getProp(ipSettings, "Interface", (String)null);
+        if (ifname != null) {
+            mLastInterface.put(dbusPath, ifname);
         }
-        dcr.addresses = singleStringToArray(getProp(ipSettings, "Address", ""));
-        if (dcr.addresses.length > 0) {
+
+	String type = ""; // I don't think anything is using this, and I'm not sure the valid values
+
+	String address = getProp(ipSettings, "Address", (String)null);
+	int prefixLength = 0;
+        if (!address.isEmpty()) {
             String netmask = getProp(ipSettings, "Netmask", (String)null);
-            if (!TextUtils.isEmpty(netmask)) {
-                dcr.addresses[0] += "/"+getPrefixLength((Inet4Address)NetworkUtils.numericToInetAddress(netmask));
-            }
+            if (!TextUtils.isEmpty(netmask))
+                prefixLength = getPrefixLength((Inet4Address)NetworkUtils.numericToInetAddress(netmask));
         }
-        dcr.dnses = getProp(ipSettings, "DomainNameServers", new String[0]);
-        dcr.gateways = singleStringToArray(getProp(ipSettings, "Gateway", ""));
-        dcr.mtu = PhoneConstants.UNSET_MTU;
+	List<LinkAddress> addresses = singleStringToLinkAddressList(address, prefixLength);
+
+	String dns = getProp(ipSettings, "DomainNameServers", (String)null);
+
+	List<InetAddress> dnses = singleStringToInetAddressList(dns);
+	List<InetAddress> gateways = singleStringToInetAddressList(getProp(ipSettings, "Gateway", ""));
+
+        DataCallResponse dcr = new DataCallResponse(
+                    status, suggestedRetryTime, cid, active, type,
+                    ifname, addresses, dnses, gateways, null, PhoneConstants.UNSET_MTU);
         return dcr;
     }
 
@@ -284,7 +292,18 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
             Map<String, Variant<?>> connectionProps = mConnectionsProps.get(dbusPath);
             if (connectionProps != null) {
                 DataCallResponse dcr = getDataCallResponse(dbusPath, connectionProps);
-                dcr.active = DATA_CONNECTION_ACTIVE_PH_LINK_INACTIVE;
+                dcr = new DataCallResponse(
+                    dcr.getStatus(),
+                    dcr.getSuggestedRetryTime(),
+                    dcr.getCallId(),
+                    DATA_CONNECTION_ACTIVE_PH_LINK_INACTIVE,
+                    dcr.getType(),
+                    dcr.getIfname(),
+                    dcr.getAddresses(),
+                    dcr.getDnses(),
+                    dcr.getGateways(),
+                    dcr.getPcscfs(),
+                    dcr.getMtu());
                 onContextIp4SettingsChange(dbusPath, dcr);
             }
         } catch (Throwable e) {
@@ -300,11 +319,11 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
         @Override
         public void run() {
             Object calls = getDataCallListImpl();
-            notifyResultAndLog("data netstate", mDataNetworkStateRegistrants, calls, true);
+            notifyResultAndLog("data netstate", mDataCallListChangedRegistrants, calls, true);
 
             // This one seems out-of-place, but as far as I can tell it's the way to get
             // ServiceStateTracker to poll us and discover our data registration state.
-            notifyResultAndLog("voice netstate (because of data netstate)", mVoiceNetworkStateRegistrants, null, false);
+            notifyResultAndLog("voice netstate (because of data netstate)", mNetworkStateRegistrants, null, false);
         }
     };
 
@@ -314,7 +333,7 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
             return false;
         }
 
-        if (dcr.active == DATA_CONNECTION_ACTIVE_PH_LINK_INACTIVE) {
+        if (dcr.getActive() == DATA_CONNECTION_ACTIVE_PH_LINK_INACTIVE) {
             // dcr's iface is null at this point, so use the last one we knew about
             if (mLastInterface.get(dbusPath) != null) {
                 String iface = mLastInterface.get(dbusPath);
@@ -324,35 +343,31 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
                 Rlog.e(TAG, "Interface unknown for context "+dbusPath+"; unable to ifdown");
                 return false;
             }
-        } else if (dcr.active == DATA_CONNECTION_ACTIVE_PH_LINK_UP) {
-            if (dcr.ifname == null) {
+        } else if (dcr.getActive() == DATA_CONNECTION_ACTIVE_PH_LINK_UP) {
+            if (dcr.getIfname() == null) {
                 Rlog.w(TAG, "Got an active connection with no interface; ignoring (might be mid-statechange)");
                 return false;
             }
-            mNetworkManagementService.clearInterfaceAddresses(dcr.ifname);
-            if (dcr.addresses.length > 1) {
+            mNetworkManagementService.clearInterfaceAddresses(dcr.getIfname());
+            if (dcr.getAddresses().size() > 1) {
                 // we currently can't get this state from oFono
                 Rlog.e(TAG, "Got a multi-address interface; ignoring");
                 return false;
             }
 
-            if (dcr.addresses.length == 1) {
+            if (dcr.getAddresses().size() == 1) {
                 InterfaceConfiguration ifaceCfg = new InterfaceConfiguration();
-                String[] pieces = dcr.addresses[0].split("/");
-                ifaceCfg.setLinkAddress(new LinkAddress(
-                        NetworkUtils.numericToInetAddress(pieces[0]),
-                        pieces.length == 2 ? Integer.parseInt(pieces[1]) : 32
-                ));
+                ifaceCfg.setLinkAddress(dcr.getAddresses().get(0));
                 ifaceCfg.setInterfaceUp();
-                mNetworkManagementService.setInterfaceConfig(dcr.ifname, ifaceCfg);
+                mNetworkManagementService.setInterfaceConfig(dcr.getIfname(), ifaceCfg);
             } else {
-                mNetworkManagementService.setInterfaceUp(dcr.ifname);
+                mNetworkManagementService.setInterfaceUp(dcr.getIfname());
             }
-            if (dcr.mtu != PhoneConstants.UNSET_MTU) {
-                mNetworkManagementService.setMtu(dcr.ifname, dcr.mtu);
+            if (dcr.getMtu() != PhoneConstants.UNSET_MTU) {
+                mNetworkManagementService.setMtu(dcr.getIfname(), dcr.getMtu());
             }
         } else {
-            Rlog.w(TAG, "Ignoring context with unknown state dcr.active="+ dcr.active);
+            Rlog.w(TAG, "Ignoring context with unknown state dcr.active="+ dcr.getActive());
             return false;
         }
 
@@ -452,4 +467,19 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
         return !TextUtils.isEmpty(s) ? new String[] { s } : new String[0];
     }
 
+    private List<LinkAddress> singleStringToLinkAddressList(String s, int prefixLength) {
+	List<LinkAddress> res = new ArrayList<>();
+        if (!TextUtils.isEmpty(s))
+            res.add(new LinkAddress(NetworkUtils.numericToInetAddress(s), prefixLength));
+
+        return res;
+    }
+
+    private List<InetAddress> singleStringToInetAddressList(String s) {
+	List<InetAddress> res = new ArrayList<>();
+        if (!TextUtils.isEmpty(s))
+            res.add(NetworkUtils.numericToInetAddress(s));
+
+        return res;
+    }
 }

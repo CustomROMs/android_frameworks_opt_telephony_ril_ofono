@@ -63,10 +63,10 @@ public abstract class RilWrapperBase extends SaneBaseCommands {
         mPhoneType = a;
     }
 
-    @Override
+    /*@Override
     public boolean needsOldRilFeature(final String a) {
         return false;
-    }
+    }*/
 
     /*package*/ static android.os.Message getCurrentMessage() {
         return sCurrentMsg;
@@ -84,12 +84,12 @@ public abstract class RilWrapperBase extends SaneBaseCommands {
     /*package*/ RilOfono.RegistrantList mSignalStrengthRegistrants = new DynamicRegistrantListFromField("mSignalStrengthRegistrant");
 
     /*package*/ RilOfono.RegistrantList
-            mVoiceNetworkStateRegistrants = new RegistrantListAndroidTypeWrapper(super.mVoiceNetworkStateRegistrants),
+            mNetworkStateRegistrants = new RegistrantListAndroidTypeWrapper(super.mNetworkStateRegistrants),
             mIccStatusChangedRegistrants = new RegistrantListAndroidTypeWrapper(super.mIccStatusChangedRegistrants),
             mIccRefreshRegistrants = new RegistrantListAndroidTypeWrapper(super.mIccRefreshRegistrants),
             mVoiceRadioTechChangedRegistrants = new RegistrantListAndroidTypeWrapper(super.mVoiceRadioTechChangedRegistrants),
             mCallStateRegistrants = new RegistrantListAndroidTypeWrapper(super.mCallStateRegistrants),
-            mDataNetworkStateRegistrants = new RegistrantListAndroidTypeWrapper(super.mDataNetworkStateRegistrants),
+            mDataCallListChangedRegistrants = new RegistrantListAndroidTypeWrapper(super.mDataCallListChangedRegistrants),
             mRilConnectedRegistrants = new RegistrantListAndroidTypeWrapper(super.mRilConnectedRegistrants);
 
     /*package*/ void setRadioState(RadioState newState, boolean suppressNotifications) {
@@ -113,10 +113,10 @@ public abstract class RilWrapperBase extends SaneBaseCommands {
     // (Currently BuildRilWrapper doesn't support them. If we have real implementations,
     // it would probably be better to fix that and put them in appropriate modules.)
 
-    @Override
+    /*@Override
     public void setLocalCallHold(boolean lchStatus) {
         throw new CommandException(CommandException.Error.REQUEST_NOT_SUPPORTED);
-    }
+    }*/
 
     @Override
     public void testingEmergencyCall() {

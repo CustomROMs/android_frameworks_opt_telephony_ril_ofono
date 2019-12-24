@@ -28,6 +28,7 @@ import android.os.HandlerThread;
 import android.os.INetworkManagementService;
 import android.os.Message;
 import android.os.ServiceManager;
+import android.telephony.data.DataProfile;
 import android.telephony.Rlog;
 import android.text.TextUtils;
 import android.util.ArraySet;
@@ -35,7 +36,6 @@ import android.util.Pair;
 
 import com.android.internal.telephony.CommandException;
 import com.android.internal.telephony.cdma.CdmaSmsBroadcastConfigInfo;
-import com.android.internal.telephony.dataconnection.DataProfile;
 import com.android.internal.telephony.gsm.SmsBroadcastConfigInfo;
 import com.android.internal.telephony.uicc.IccIoResult;
 import com.android.internal.telephony.uicc.IccUtils;
@@ -225,7 +225,7 @@ import static com.android.internal.telephony.CommandsInterface.RadioState;
         } else if (mNetworkRegistrationModule == null) {
             mNetworkRegistrationModule = new NetworkRegistrationModule(
                     getOfonoInterface(NetworkRegistration.class),
-                    mRilWrapper.mVoiceNetworkStateRegistrants, mRilWrapper.mVoiceRadioTechChangedRegistrants, mRilWrapper.mSignalStrengthRegistrants
+                    mRilWrapper.mNetworkStateRegistrants, mRilWrapper.mVoiceRadioTechChangedRegistrants, mRilWrapper.mSignalStrengthRegistrants
             );
         }
     }
@@ -278,7 +278,7 @@ import static com.android.internal.telephony.CommandsInterface.RadioState;
             mDatacallModule = new DatacallModule(
                     getOfonoInterface(ConnectionManager.class),
                     getOfonoInterface(NetworkRegistration.class),
-                    mRilWrapper.mDataNetworkStateRegistrants, mRilWrapper.mVoiceNetworkStateRegistrants,
+                    mRilWrapper.mDataCallListChangedRegistrants, mRilWrapper.mNetworkStateRegistrants,
                     INetworkManagementService.Stub.asInterface(ServiceManager.getService(Context.NETWORKMANAGEMENT_SERVICE))
             );
         }

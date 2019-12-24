@@ -51,14 +51,14 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
     private NetworkRegistration mNetReg;
     private final Map<String, Variant<?>> mNetRegProps = new HashMap<>();
 
-    private final RegistrantList mVoiceNetworkStateRegistrants;
+    private final RegistrantList mNetworkStateRegistrants;
     private final RegistrantList mVoiceRadioTechChangedRegistrants;
     private final RilOfono.RegistrantList mSignalStrengthRegistrants;
 
     /*package*/ NetworkRegistrationModule(NetworkRegistration netReg, RegistrantList voiceNetworkStateRegistrants, RegistrantList voiceRadioTechChangedRegistrants, RegistrantList signalStrengthRegistrants) {
         Rlog.v(TAG, "NetworkRegistrationModule()");
         mNetReg = netReg;
-        mVoiceNetworkStateRegistrants = voiceNetworkStateRegistrants;
+        mNetworkStateRegistrants = voiceNetworkStateRegistrants;
         mVoiceRadioTechChangedRegistrants = voiceRadioTechChangedRegistrants;
         mSignalStrengthRegistrants = signalStrengthRegistrants;
 
@@ -76,7 +76,7 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
         Byte signalPercent = getProp(mNetRegProps, "Strength", (Byte)null);
         return new SignalStrength(
                 signalPercent == null ? 99 : (int)Math.round(signalPercent / 100.0 * 31),
-                99, -1, -1, -1, -1, -1, true);
+                99, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, true, false, null);
     }
 
     @Override
@@ -145,7 +145,7 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
     final DebouncedRunnable mFnNotifyNetworkChanged = new DebouncedRunnable() {
         @Override
         public void run() {
-            notifyResultAndLog("voice netstate", mVoiceNetworkStateRegistrants, null, false);
+            notifyResultAndLog("voice netstate", mNetworkStateRegistrants, null, false);
             notifyResultAndLog("voice radiotech changed", mVoiceRadioTechChangedRegistrants, getVoiceRadioTechnologyImpl(), false);
         }
     };

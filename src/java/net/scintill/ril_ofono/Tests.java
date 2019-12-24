@@ -22,7 +22,7 @@ package net.scintill.ril_ofono;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 
-import com.android.internal.telephony.IccUtils;
+import com.android.internal.telephony.uicc.IccUtils;
 import com.android.internal.telephony.SmsConstants;
 
 import org.ofono.MessageManager;

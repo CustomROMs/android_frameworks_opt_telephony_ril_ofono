@@ -24,7 +24,7 @@ import android.telephony.Rlog;
 import android.telephony.SmsMessage;
 
 import com.android.internal.telephony.CommandException;
-import com.android.internal.telephony.IccUtils;
+import com.android.internal.telephony.uicc.IccUtils;
 import com.android.internal.telephony.SmsConstants;
 import com.android.internal.telephony.SmsResponse;
 

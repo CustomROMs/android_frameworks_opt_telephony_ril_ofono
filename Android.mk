@@ -36,7 +36,9 @@ include $(CLEAR_VARS)
 	LOCAL_PRIVATE_PLATFORM_APIS := true
 	LOCAL_SRC_FILES := $(call all-java-files-under,src/java) $(call all-java-files-under,build/java)
 	LOCAL_STATIC_JAVA_LIBRARIES := RilOfono.3rdparty
-	LOCAL_JAVA_LIBRARIES := telephony-common
+	LOCAL_JAVA_LIBRARIES := \
+		telephony-common \
+		framework
 
 	LOCAL_JAVACFLAGS := -Xlint
 include $(BUILD_STATIC_JAVA_LIBRARY)
