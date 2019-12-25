@@ -19,6 +19,7 @@
 
 package net.scintill.ril_ofono;
 
+import android.telephony.ImsiEncryptionInfo;
 import android.telephony.Rlog;
 
 import com.android.internal.telephony.CommandException;
@@ -185,7 +186,7 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
 
     @Override
     @OkOnMainThread
-    public Object iccOpenLogicalChannel(String AID, byte p2) {
+    public Object iccOpenLogicalChannel(String AID, int p2) {
         throw new CommandException(REQUEST_NOT_SUPPORTED);
     }
 
@@ -213,4 +214,27 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
         throw new CommandException(REQUEST_NOT_SUPPORTED);
     }
 
+    @Override
+    @OkOnMainThread
+    public Object setSimCardPower(int state) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
+
+    @Override
+    @OkOnMainThread
+    public Object getIccSlotsStatus() {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
+
+    @Override
+    @OkOnMainThread
+    public Object setLogicalToPhysicalSlotMapping(int[] physicalSlots) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
+
+    @Override
+    @OkOnMainThread
+    public Object setCarrierInfoForImsiEncryption(ImsiEncryptionInfo imsiEncryptionInfo) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
 }

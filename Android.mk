@@ -60,5 +60,6 @@ include $(CLEAR_VARS)
 
 	LOCAL_JAVACFLAGS := -Xlint
 
-	LOCAL_PROGUARD_FLAG_FILES = proguard.flags
+	#LOCAL_PROGUARD_FLAG_FILES = proguard.flags
+	LOCAL_PROGUARD_ENABLED := disabled
 include $(BUILD_PACKAGE)

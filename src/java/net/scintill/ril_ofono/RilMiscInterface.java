@@ -55,13 +55,13 @@ interface RilMiscInterface {
 
     Object changeBarringPassword(String facility, String oldPwd, String newPwd);
 
-    Object supplyDepersonalization(String netpin, String type);
+    Object supplyNetworkDepersonalization(String netpin);
 
     Object getPDPContextList();
 
     Object getDataCallProfile(int appType);
 
-    Object setDataProfile(DataProfile[] dps);
+    Object setDataProfile(DataProfile[] dps, boolean isRoaming);
 
     Object hangupForegroundResumeBackground();
 

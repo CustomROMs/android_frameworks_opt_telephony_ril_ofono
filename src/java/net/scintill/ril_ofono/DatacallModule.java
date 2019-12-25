@@ -20,11 +20,14 @@
 package net.scintill.ril_ofono;
 
 import android.net.InterfaceConfiguration;
+import android.net.KeepalivePacketData;
 import android.net.LinkAddress;
+import android.net.LinkProperties;
 import android.net.NetworkUtils;
 import android.os.INetworkManagementService;
 import android.os.RemoteException;
 import android.telephony.data.DataCallResponse;
+import android.telephony.data.DataProfile;
 import android.telephony.Rlog;
 import android.text.TextUtils;
 
@@ -118,28 +121,32 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
     }
 
     @Override
-    public Object setupDataCall(String radioTechnologyIntStr, String profile, String apnStr, String user, String password, String authType, String protocol) {
-        OfonoNetworkTechnology radioTechnology = OfonoNetworkTechnology.fromSetupDataCallValue(Integer.valueOf(radioTechnologyIntStr));
+    public Object setupDataCall(int accessNetworkType, DataProfile dataProfile, boolean isRoaming,
+                       boolean allowRoaming, int reason, LinkProperties linkProperties) {
+        OfonoNetworkTechnology radioTechnology = OfonoNetworkTechnology.fromSetupDataCallValue(accessNetworkType);
         OfonoNetworkTechnology currentRadioTechnology = getBearerTechnology();
+        String radioTechnologyIntStr = String.valueOf(accessNetworkType);
 
-        Rlog.d(TAG, "setupDataCall "+radioTechnology+"("+radioTechnologyIntStr+") "+privStr(profile+" "+apnStr+" "+user+" "+password+" "+authType)+" "+protocol);
+        Rlog.d(TAG, "setupDataCall "+radioTechnology+"("+radioTechnologyIntStr+") "+privStr(
+                    String.valueOf(dataProfile.getProfileId())+" "+dataProfile.getApn()+" "+dataProfile.getUserName()+" "+
+                    dataProfile.getPassword()+" "+String.valueOf(dataProfile.getAuthType()))+" "+dataProfile.getProtocol());
 
         // let's be stringent for now...
         if (radioTechnology != currentRadioTechnology) {
             Rlog.e(TAG, "Unable to provide requested radio technology "+radioTechnology+"("+radioTechnologyIntStr+"); current is "+currentRadioTechnology);
             throw new CommandException(MODE_NOT_SUPPORTED);
         }
-        if (!profile.equals(String.valueOf(RILConstants.DATA_PROFILE_DEFAULT))) {
-            Rlog.e(TAG, "Unable to provide non-default data call profile "+profile);
+        if (dataProfile.getProfileId() != RILConstants.DATA_PROFILE_DEFAULT) {
+            Rlog.e(TAG, "Unable to provide non-default data call profile "+String.valueOf(dataProfile.getProfileId()));
             throw new CommandException(MODE_NOT_SUPPORTED);
         }
 
         final Apn apn = new Apn();
-        apn.apn = apnStr;
-        apn.username = user;
-        apn.password = password;
-        apn.authType = Integer.parseInt(authType);
-        apn.protocol = protocol;
+        apn.apn = dataProfile.getApn();
+        apn.username = dataProfile.getUserName();
+        apn.password = dataProfile.getPassword();
+        apn.authType = dataProfile.getAuthType();
+        apn.protocol = dataProfile.getProtocol();
 
         Path ctxPath = mConnMan.AddContext("internet");
         ConnectionContext ctx = RilOfono.sInstance.getOfonoInterface(ConnectionContext.class, ctxPath.getPath());
@@ -232,7 +239,7 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
 
     @Override
     @OkOnMainThread
-    public Object setInitialAttachApn(String apn, String protocol, int authType, String username, String password) {
+    public Object setInitialAttachApn(DataProfile dataProfile, boolean isRoaming) {
         // not sure what this means, or whether it's applicable to oFono
         throw new CommandException(REQUEST_NOT_SUPPORTED);
     }
@@ -481,5 +488,17 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
             res.add(NetworkUtils.numericToInetAddress(s));
 
         return res;
+    }
+
+    @Override
+    @OkOnMainThread
+    public Object stopNattKeepalive(int sessionHandle) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
+
+    @Override
+    @OkOnMainThread
+    public Object startNattKeepalive(int contextId, KeepalivePacketData packetData, int intervalMillis) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
     }
 }

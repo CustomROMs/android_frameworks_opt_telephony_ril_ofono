@@ -19,18 +19,27 @@
 
 package net.scintill.ril_ofono;
 
+import android.telephony.data.DataProfile;
+import android.net.KeepalivePacketData;
+import android.net.LinkProperties;
+
 interface RilDatacallInterface {
 
     Object getDataCallList();
 
     Object getDataRegistrationState();
 
-    Object setupDataCall(String radioTechnology, String profile, String apn, String user, String password, String authType, String protocol);
+    Object setupDataCall(int accessNetworkType, DataProfile dataProfile, boolean isRoaming,
+                       boolean allowRoaming, int reason, LinkProperties linkProperties);
 
     Object deactivateDataCall(int cid, int reason);
 
-    Object setInitialAttachApn(String apn, String protocol, int authType, String username, String password);
+    Object setInitialAttachApn(DataProfile dataProfile, boolean isRoaming);
 
     Object setDataAllowed(boolean allowed);
+
+    Object stopNattKeepalive(int sessionHandle);
+
+    Object startNattKeepalive(int contextId, KeepalivePacketData packetData, int intervalMillis);
 
 }

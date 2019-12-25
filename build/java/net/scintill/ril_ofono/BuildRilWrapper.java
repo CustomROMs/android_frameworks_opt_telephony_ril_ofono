@@ -51,6 +51,7 @@ import java.util.List;
         os.println("import static net.scintill.ril_ofono.RilOfono.respondExc;");
         os.println("import static net.scintill.ril_ofono.RilOfono.runOnDbusThread;");
         os.println("import static com.android.internal.telephony.CommandException.Error.GENERIC_FAILURE;");
+        os.println("import static com.android.internal.telephony.CommandException.Error.REQUEST_NOT_SUPPORTED;");
 
         os.println("public class RilWrapper extends RilWrapperBase {");
 
@@ -123,6 +124,22 @@ import java.util.List;
             os.println("}");
             os.println();
         }
+
+        os.println("@Deprecated");
+        os.println("public void setAllowedCarriers(final java.util.List<android.service.carrier.CarrierIdentifier> carriers, final android.os.Message msg) {");
+        os.println("if (mRilOfono.mDatacallModule == null) { respondExc(\"setAllowedCarriers [nomodule]\", msg, new CommandException(GENERIC_FAILURE), null); return; }");
+        os.println("sCurrentMsg = msg;");
+        os.println("try {");
+        os.println("respondExc(\"setAllowedCarriers\", msg, new CommandException(REQUEST_NOT_SUPPORTED), null);");
+        os.println("} catch (CommandException exc) {");
+        os.println("respondExc(\"\", msg, exc, null);");
+        os.println("} catch (Throwable thr) {");
+        os.println("RilOfono.logUncaughtException(\"\", thr);");
+        os.println("respondExc(\"\", msg, new CommandException(GENERIC_FAILURE), null);");
+        os.println("}");
+        os.println("}");
+
+
         os.println("}");
         os.close();
     }

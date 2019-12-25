@@ -544,7 +544,7 @@ import static com.android.internal.telephony.CommandsInterface.RadioState;
 
     @Override
     @OkOnMainThread
-    public Object supplyDepersonalization(String netpin, String type) {
+    public Object supplyNetworkDepersonalization(String netpin) {
         throw new CommandException(REQUEST_NOT_SUPPORTED);
     }
 
@@ -562,7 +562,7 @@ import static com.android.internal.telephony.CommandsInterface.RadioState;
 
     @Override
     @OkOnMainThread
-    public Object setDataProfile(DataProfile[] dps) {
+    public Object setDataProfile(DataProfile[] dps, boolean isRoaming) {
         throw new CommandException(REQUEST_NOT_SUPPORTED);
     }
 

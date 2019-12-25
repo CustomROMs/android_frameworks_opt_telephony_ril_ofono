@@ -19,6 +19,8 @@
 
 package net.scintill.ril_ofono;
 
+import android.telephony.ImsiEncryptionInfo;
+
 interface RilSimInterface {
 
     Object getIccCardStatus();
@@ -33,7 +35,7 @@ interface RilSimInterface {
 
     Object iccOpenLogicalChannel(String AID);
 
-    Object iccOpenLogicalChannel(String AID, byte p2);
+    Object iccOpenLogicalChannel(String AID, int p2);
 
     Object iccCloseLogicalChannel(int channel);
 
@@ -45,4 +47,11 @@ interface RilSimInterface {
 
     Object getAtr();
 
+    Object setSimCardPower(int state);
+
+    Object getIccSlotsStatus();
+
+    Object setLogicalToPhysicalSlotMapping(int[] physicalSlots);
+
+    Object setCarrierInfoForImsiEncryption(ImsiEncryptionInfo imsiEncryptionInfo);
 }

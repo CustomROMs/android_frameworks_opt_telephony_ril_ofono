@@ -19,6 +19,12 @@
 
 package net.scintill.ril_ofono;
 
+import java.util.List;
+
+import android.telephony.data.DataProfile;
+import android.telephony.NetworkScanRequest;
+import android.service.carrier.CarrierIdentifier;
+
 interface RilNetworkRegistrationInterface {
 
     Object getOperator();
@@ -36,5 +42,26 @@ interface RilNetworkRegistrationInterface {
     Object stopLceService();
 
     Object pullLceData();
+
+    Object setLinkCapacityReportingCriteria(
+              final int hysteresisMs, final int hysteresisDlKbps,
+              final int hysteresisUlKbps, final int[] thresholdsDlKbps,
+              final int[] thresholdsUlKbps, final int ran);
+
+    Object setSignalStrengthReportingCriteria(
+              final int hysteresisMs, final int hysteresisDb,
+              final int[] thresholdsDbm, final int ran);
+
+    //Object setAllowedCarriers(List<CarrierIdentifier> carriers);
+
+    Object getAllowedCarriers();
+
+    Object sendDeviceState(int stateType, boolean state);
+
+    Object setUnsolResponseFilter(int filter);
+
+    Object startNetworkScan(NetworkScanRequest nsr);
+
+    Object stopNetworkScan();
 
 }

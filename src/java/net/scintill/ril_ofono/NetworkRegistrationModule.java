@@ -19,6 +19,9 @@
 
 package net.scintill.ril_ofono;
 
+import android.service.carrier.CarrierIdentifier;
+import android.telephony.data.DataProfile;
+import android.telephony.NetworkScanRequest;
 import android.telephony.Rlog;
 import android.telephony.SignalStrength;
 
@@ -28,6 +31,7 @@ import org.freedesktop.dbus.Variant;
 import org.ofono.NetworkRegistration;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static android.telephony.ServiceState.RIL_RADIO_TECHNOLOGY_EDGE;
@@ -205,4 +209,56 @@ import static net.scintill.ril_ofono.RilOfono.runOnMainThreadDebounced;
         throw new CommandException(REQUEST_NOT_SUPPORTED);
     }
 
+    @Override
+    @OkOnMainThread
+    public Object setLinkCapacityReportingCriteria(
+              final int hysteresisMs, final int hysteresisDlKbps,
+              final int hysteresisUlKbps, final int[] thresholdsDlKbps,
+              final int[] thresholdsUlKbps, final int ran) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
+
+    @Override
+    @OkOnMainThread
+    public Object setSignalStrengthReportingCriteria(
+              final int hysteresisMs, final int hysteresisDb,
+              final int[] thresholdsDbm, final int ran) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
+
+    /*@Override
+    @OkOnMainThread
+    public Object setAllowedCarriers(List<CarrierIdentifier> carriers) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }*/
+
+    @Override
+    @OkOnMainThread
+    public Object getAllowedCarriers() {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
+
+    @Override
+    @OkOnMainThread
+    public Object sendDeviceState(int stateType, boolean state) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
+
+    @Override
+    @OkOnMainThread
+    public Object setUnsolResponseFilter(int filter) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
+
+    @Override
+    @OkOnMainThread
+    public Object startNetworkScan(NetworkScanRequest nsr) {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
+
+    @Override
+    @OkOnMainThread
+    public Object stopNetworkScan() {
+        throw new CommandException(REQUEST_NOT_SUPPORTED);
+    }
 }
